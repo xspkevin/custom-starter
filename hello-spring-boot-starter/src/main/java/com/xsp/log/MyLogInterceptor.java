@@ -28,24 +28,30 @@ public class MyLogInterceptor extends HandlerInterceptorAdapter {
         return true;
     }
 
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        HandlerMethod handlerMethod = (HandlerMethod)handler;
-        Method method = handlerMethod.getMethod(); // 获得被拦截的方法对象
-        MyLog myLog = method.getAnnotation(MyLog.class); // 获得方法上的注解
-        if (myLog != null) {
-            // 方法上加了MyLog注解，需要进行日志记录
-            long endTime = System.currentTimeMillis();
-            long startTime = startTimeThreadLocal.get();
-            long optTime = endTime - startTime;
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
+        try {
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            Method method = handlerMethod.getMethod(); // 获得被拦截的方法对象
+            MyLog myLog = method.getAnnotation(MyLog.class); // 获得方法上的注解
+            if (myLog != null) {
+                // 方法上加了MyLog注解，需要进行日志记录
+                long endTime = System.currentTimeMillis();
+                long startTime = startTimeThreadLocal.get();
+                long optTime = endTime - startTime;
 
-            String requestUri = request.getRequestURI();
-            String methodName = method.getDeclaringClass().getName() + "." + method.getName();
-            String methodDesc = myLog.desc();
+                String requestUri = request.getRequestURI();
+                String methodName = method.getDeclaringClass().getName() + "." + method.getName();
+                String methodDesc = myLog.desc();
 
-            System.out.println("请求uri：" + requestUri);
-            System.out.println("请求方法名：" + methodName);
-            System.out.println("方法描述：" + methodDesc);
-            System.out.println("方法执行时间：" + optTime + "ms");
+                System.out.println("请求uri：" + requestUri);
+                System.out.println("请求方法名：" + methodName);
+                System.out.println("方法描述：" + methodDesc);
+                System.out.println("方法执行时间：" + optTime + "ms");
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            startTimeThreadLocal.remove(); // 清除ThreadLocal数据，防止内存泄露
         }
     }
 }
